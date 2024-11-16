@@ -30,12 +30,12 @@ return redirect()->route('quiz');
     public function index(){
         // Retrieve the gender from the session
     $gender = session('gender');
-    
+
     //dd($gender);
 
     // Fetch questions based on the gender or all questions if gender is not set
     $questions = $gender ? Question::where('questions_for', $gender)->get() : Question::where('questions_for', 'other')->get();
-    
+
     //dd($questions);
 
 
@@ -44,75 +44,78 @@ return redirect()->route('quiz');
 
    public function store(Request $request)
     {
+        //dd($request->all());
         // Validate input data
         $validatedData = $request->validate([
             'email' => 'required|email',
             'answers' => 'required|array',
             'gender' => 'required',
         ]);
-    
+
         // Store email and gender in session
         session(['user_email' => $validatedData['email']]);
-        session(['user_gender' => $validatedData['gender']]);
-        
-    
+        //session(['user_gender' => $validatedData['gender']]);
+
+
         // Store data in the database
         $questionAnswer = QuestionAnswer::create([
             'email' => $validatedData['email'],
             'gender' => $validatedData['gender'],
             'answers' => json_encode($validatedData['answers']),
         ]);
-    
+
+        //dd($questionAnswer);
+
         // Decode the user's answers
         $userAnswers = json_decode($questionAnswer->answers, true);
-    
+
         // Fetch products relevant to the user's gender
         $products = Product::where('products_for', $validatedData['gender'])->get();
-    
+
         if ($products->isEmpty()) {
             return redirect()->back()->with('success', 'No products found for suggestions.');
         }
-    
+
         $suggestedProducts = [];
         $similarityScores = [];
-    
+
         foreach ($products as $product) {
             // Decode product's questions
             $productQuestions = is_string($product->question_answers)
                         ? json_decode($product->question_answers, true)
                         : $product->question_answers;
-    
+
             if (!is_array($productQuestions) || is_null($productQuestions)) {
                 continue;
             }
-    
+
             $productQuestions = $productQuestions[0];
             $matches = 0;
-    
+
             // Calculate similarity
             foreach ($productQuestions as $key => $value) {
                 $index = str_replace('question_', '', $key);
-    
+
                 if (isset($userAnswers[$index]) && trim(strtolower($userAnswers[$index])) === trim(strtolower($value))) {
                     $matches++;
                 }
             }
-    
+
             $totalQuestions = count($productQuestions);
             $similarityPercentage = ($totalQuestions > 0) ? ($matches / $totalQuestions) * 100 : 0;
-    
+
             $similarityScores[$product->id] = $similarityPercentage;
-    
+
             if ($similarityPercentage === 100) {
                 $suggestedProducts[] = $product;
             }
         }
-    
+
         // If no 100% matches, find the most similar products
         if (empty($suggestedProducts) && !empty($similarityScores)) {
             arsort($similarityScores);
             $topSimilarProducts = array_slice($similarityScores, 0, 3, true);
-    
+
             foreach ($topSimilarProducts as $productId => $score) {
                 $product = Product::find($productId);
                 if ($product) {
@@ -122,11 +125,11 @@ return redirect()->route('quiz');
         } else {
             $suggestedProducts = array_slice($suggestedProducts, 0, 3);
         }
-    
+
         if (!empty($suggestedProducts)) {
             Mail::to($validatedData['email'])->send(new ProductSuggestions($suggestedProducts));
         }
-    
+
         return redirect()->route('suggested.products')->with('success', 'Your answers have been submitted, and suggestions have been sent via email!');
     }
 

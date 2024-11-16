@@ -10,9 +10,9 @@ use App\Http\Controllers\QuestionAnswerController;
 Route::get('/', [QuestionAnswerController::class, 'selectGender']);
 Route::post('/select-gender', [QuestionAnswerController::class, 'selectGenderPost'] )->name('select-gender');
 Route::get('/quiz', [QuestionAnswerController::class, 'index'])->name('quiz');
-Route::get('/suggested-products', [QuestionAnswerController::class, 'suggestedProducts'])->name('suggested.products');
 
 Route::post('/submit-answers', [QuestionAnswerController::class, 'store'])->name('answers.store');
+Route::get('/suggested-products', [QuestionAnswerController::class, 'suggestedProducts'])->name('suggested.products');
 
 Route::post('/language-switch', [LanguageController::class, 'languageSwitch'])->name('language.switch');
 

@@ -55,7 +55,7 @@
                                     <label class="form-check-label question__label" for="gender_female">Female</label>
                                 </div>
                                 <div class="q-box__question">
-                                    <input class="form-check-input question__input" id="gender_other" name="gender" type="radio" value="other" required {{session('other')== 'other'? 'checked': ''}} onclick='return false'>
+                                    <input class="form-check-input question__input" id="gender_other" name="gender" type="radio" value="other" required {{session('gender')== 'other'? 'checked': ''}} onclick='return false'>
                                     <label class="form-check-label question__label" for="gender_other">Other</label>
                                 </div>
                             </div>
@@ -132,7 +132,6 @@
                         <button id="submit-btn" type="submit" class="d-none">Submit</button>
                     </div>
                 </form>
-
             </div>
         </div>
     </div>
