@@ -142,7 +142,7 @@ public function suggestedProducts(Request $request)
     $gender = $request->session()->get('gender'); // Assumes gender is stored in the session
 
     // Get the question answer record for that email
-    $questionAnswer = QuestionAnswer::where('email', $email)->first();
+    $questionAnswer = QuestionAnswer::where('email', $email)->latest()->first();
 
     // If no record found, redirect with an error message
     if (!$questionAnswer) {
